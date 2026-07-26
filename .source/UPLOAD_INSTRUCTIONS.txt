@@ -1,0 +1,13 @@
+PEACE LOVE EXACT MIRROR SOURCE UPLOAD
+
+Upload one file to this folder on the agent/exact-mirror-release branch:
+
+peace-love-app-source.tar.gz
+
+Do not rename, extract, or modify the file.
+
+Commit message:
+
+Add exact Google AI Studio application source
+
+The GitHub validation and deployment workflows will extract the archive, install dependencies, validate TypeScript, build the Vite application, and deploy the compiled result.
