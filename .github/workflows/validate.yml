@@ -1,0 +1,40 @@
+name: Validate Exact Mirror
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Restore exact Google AI Studio source
+        run: |
+          test -f .source/peace-love-app-source.tar.gz
+          mkdir -p app
+          tar -xzf .source/peace-love-app-source.tar.gz -C app
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm install --no-audit --no-fund
+
+      - name: Validate TypeScript
+        working-directory: app
+        run: npm run lint
+
+      - name: Build application
+        working-directory: app
+        run: npm run build
