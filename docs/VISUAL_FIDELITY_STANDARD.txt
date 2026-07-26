@@ -1,0 +1,22 @@
+PEACE LOVE HOME + PET WATCH
+VISUAL FIDELITY STANDARD
+
+1.0 Governing Authority
+
+The completed Google AI Studio application source and the supplied desktop-view and mobile-view screenshot records are the design and content authorities for this repository.
+
+2.0 Non-Negotiable Preservation Standard
+
+The GitHub version must preserve the original public-facing copy, section order, visual rhythm, color palette, typography, spacing, card geometry, border radii, shadows, iconography, CTA language, CTA placement, responsive behavior, transitions, and application-interface structure.
+
+3.0 Prohibited Deployment Changes
+
+Deployment optimization must not introduce copy rewrites, new eyebrow headings, new explanatory text, new cards or bubbles, new trust statements, new CTAs, section reordering, simplified layouts, alternate palettes, alternate type systems, or reinterpretations of the original strategy.
+
+4.0 Permitted Technical Changes
+
+Permitted changes are limited to repository path configuration, build scripts, dependency corrections, metadata, GitHub Actions, asset optimization that does not materially change appearance, and technical documentation.
+
+5.0 Application Interfaces
+
+The Client Portal, Staff Admin Portal, Associate Portal, calendars, calculators, testimonial workflows, notifications, printing, downloads, and browser-local data interactions remain part of the exact portfolio mirror. Their production limitations must be documented rather than visually removed.
