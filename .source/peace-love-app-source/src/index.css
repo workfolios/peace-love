@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;750&family=Playfair+Display:ital,wght@0,400..950;1,400..950&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand-bg: #FFFFFF;
+  --color-brand-text: #252825; /* Liquid Charcoal */
+  --color-brand-sage: #7F947E;
+  --color-brand-sage-light: #F3F6F3;
+  --color-brand-stone: #FDF8FB; /* Soft Blush */
+  --color-brand-stone-light: #FDF8FB; /* Soft Blush */
+  --color-brand-navy: #17233A; /* Optional Deep Navy */
+  --color-brand-navy-hover: #0F1726;
+  --color-brand-plum: #100720; /* Deep Dark Purple Anchor */
+  --color-brand-plum-hover: #1b1035;
+  --color-brand-plum-light: #FDF8FB; /* Soft Blush */
+  --color-brand-pink: #9C5B7F; /* Dusty Rose */
+  --color-brand-pink-dark: #8F4F73; /* Darker Dusty Rose CTA Accent */
+  --color-brand-pink-light: #FDF8FB; /* Soft Blush */
+  --color-brand-accent: #100720; /* Primary Accent */
+  --color-brand-accent-hover: #1b1035;
+  --color-brand-accent-light: #FDF8FB;
+  
+  --font-sans: "Plus Jakarta Sans", "Inter", sans-serif;
+  --font-serif: "Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+body {
+  background-color: var(--color-brand-bg);
+  color: var(--color-brand-text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* Ensure all headings utilize the Geometric Sans-serif and are bold */
+h1, h2, h3 {
+  font-family: var(--font-sans) !important;
+  font-weight: 700 !important;
+}
+
+/* Fluid scroll trigged animations */
+.scroll-section {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-section.is-visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
