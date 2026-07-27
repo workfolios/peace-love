@@ -1,0 +1,56 @@
+PEACE LOVE HOME + PET WATCH
+GITHUB PORTFOLIO MIRROR TECHNICAL MEMO
+
+1.0 Purpose
+
+This repository preserves the completed Google AI Studio application as an exact portfolio mirror. The application interfaces are retained. The memo explains which functions remain demonstrable in a browser and which require production infrastructure before they can operate securely across Jamie, clients, and associates.
+
+2.0 What GitHub Pages Can Preserve
+
+GitHub Pages can serve the compiled React, TypeScript, CSS, JavaScript, image, and font assets produced by Vite. The complete visual website and browser-side application experience can therefore be preserved, including the Home, House Watch, Pet Care, Request, Client Portal, Staff Admin Portal, and Associate Portal views.
+
+Browser-side calendars, calculators, filters, modals, printing, downloads, testimonial moderation demonstrations, status changes, notifications, and local records can also remain visible and interactive when their logic runs entirely in the visitor's browser.
+
+3.0 What GitHub Pages Does Not Supply
+
+GitHub Pages is a static hosting service. It does not provide a private application server, central database, secure authentication service, protected document storage, payment processor, email-delivery service, SMS-delivery service, or server-side authorization layer.
+
+4.0 Technical Difference Between Demonstration and Production
+
+The portfolio mirror can show the complete interface and execute browser-local logic. It cannot make that data shared, authoritative, secure, recoverable, or synchronized across devices without external services.
+
+A client record created in one browser is not automatically visible to Jamie in another browser. An administrator view displayed in the static mirror is not protected by production-grade identity verification. A file-list interface does not become an encrypted shared document vault. A calendar shown in the browser does not become a centrally locked booking calendar. A notification displayed in the interface does not send an email or text message.
+
+5.0 Feature Boundary Summary
+
+Client Portal: Interface preserved. Production requires authenticated user accounts, authorization rules, central records, and secure session management.
+
+Staff Admin Portal: Interface preserved. Production requires private staff authentication, role-based permissions, a database, audit history, and protected administrative routes.
+
+Associate Portal: Interface preserved. Production requires verified associate accounts, shared availability, centrally synchronized assignments, and permission controls.
+
+Bookings and Availability: Browser calculations and demonstration records preserved. Production requires a shared database, conflict controls, timestamps, cancellation logic, and authoritative booking status.
+
+Forms: Interface and browser-side validation preserved. Production requires a secure submission endpoint, spam protection, delivery monitoring, and centralized record creation.
+
+Testimonials: Submission and moderation demonstrations preserved. Production requires a shared moderation queue, durable storage, authorization, and controlled publication.
+
+Documents and Uploads: Interface and local preview behavior preserved. Production requires protected cloud storage, access policies, malware scanning, retention rules, and secure download links.
+
+Notifications: In-interface demonstration preserved. Production requires email, SMS, or push providers plus delivery logs and consent controls.
+
+Payments: Price display and calculator logic preserved. Production requires a payment provider, transaction security, receipts, refund controls, and accounting reconciliation.
+
+Data Persistence: Browser localStorage behavior preserved. Production requires a central database, backups, migration controls, recovery, and privacy governance.
+
+6.0 Portfolio Positioning
+
+The GitHub Pages version should be described as an exact interactive application prototype or portfolio mirror. It should not be represented as a live multi-user booking, payment, authentication, or client-record system.
+
+7.0 Future Production Conversion
+
+The production application can retain the current interface while replacing browser-local simulation with managed services for authentication, database storage, file storage, server-side functions, forms, notifications, payments, monitoring, backups, and privacy controls.
+
+8.0 Governing Rule
+
+Technical limitations must be documented. They must not be used as justification to rewrite the approved copy, change CTA strategy, simplify the visual system, remove designed interfaces, or reinterpret the original user experience.
