@@ -18,15 +18,21 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .source/peace-love-app-source
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Restore exact Google AI Studio source
+      - name: Verify exact Google AI Studio source
         run: |
-          test -f .source/peace-love-app-source.tar.gz
-          mkdir -p app
-          tar -xzf .source/peace-love-app-source.tar.gz -C app
+          test -f package.json
+          test -f src/App.tsx
+          test -f src/components/HomeView.tsx
+          test -f src/components/AdminView.tsx
+          test -f src/components/ClientPortalView.tsx
+          test -f src/components/AssociatePortalView.tsx
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -34,15 +40,12 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
-        working-directory: app
         run: npm install --no-audit --no-fund
 
       - name: Validate TypeScript
-        working-directory: app
         run: npm run lint
 
       - name: Build application
-        working-directory: app
         run: npm run build
 
       - name: Configure GitHub Pages
@@ -51,7 +54,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: ./app/dist
+          path: ./.source/peace-love-app-source/dist
 
   deploy:
     environment:
