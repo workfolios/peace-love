@@ -19,6 +19,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Restore and verify social preview
+        run: python scripts/restore_social_preview.py
+
       - name: Verify exact Google AI Studio source
         run: |
           test -f package.json
@@ -27,6 +30,7 @@ jobs:
           test -f src/components/AdminView.tsx
           test -f src/components/ClientPortalView.tsx
           test -f src/components/AssociatePortalView.tsx
+          test -f public/assets/images/og-preview-clean-v5.png
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
