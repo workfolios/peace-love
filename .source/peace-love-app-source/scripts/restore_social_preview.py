@@ -6,13 +6,13 @@ import struct
 import zlib
 from pathlib import Path
 
-EXPECTED_SHA256 = "464217de46dddb9f21839219033af4de2326045659a2c87e74ba9b877341fd4b"
+EXPECTED_SHA256 = "6eb3e03070bbae24b4e1a22752addd5727e3e8acecf4d4a0b40253c92f621680"
 EXPECTED_SIZE = (1200, 630)
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
 app_root = Path(__file__).resolve().parents[1]
 parts_dir = app_root.parent / "social-preview"
-output = app_root / "public" / "assets" / "images" / "og-preview-clean-v5.png"
+output = app_root / "public" / "assets" / "images" / "og-preview-hero-v6.png"
 parts = sorted(parts_dir.glob("part-*.txt"))
 if not parts:
     raise SystemExit("No social preview payload parts were found.")
