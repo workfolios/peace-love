@@ -37,7 +37,7 @@ jobs:
           test -f src/components/AdminView.tsx
           test -f src/components/ClientPortalView.tsx
           test -f src/components/AssociatePortalView.tsx
-          test -f public/assets/images/og-preview-clean-v5.png
+          test -f public/assets/images/og-preview-hero-v6.png
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
