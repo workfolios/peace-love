@@ -1,6 +1,6 @@
 import { ActivePage, ServiceRequest } from '../types';
 import { Shield, Home as HomeIcon, Eye, Heart, CalendarPlus, Menu, X, ArrowRight, CheckCircle2, ChevronDown } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface HeaderProps {
   activePage: ActivePage;
@@ -13,6 +13,8 @@ export default function Header({ activePage, setActivePage }: HeaderProps) {
 
   // Availability Dropdown States
   const [availabilityOpen, setAvailabilityOpen] = useState(false);
+  const availabilityTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement | null>(null);
   const [startDate, setStartDate] = useState<number | null>(null);
   const [endDate, setEndDate] = useState<number | null>(null);
   const [serviceType, setServiceType] = useState<'Overnight' | 'Drop-In'>('Overnight');
@@ -48,6 +50,7 @@ export default function Header({ activePage, setActivePage }: HeaderProps) {
   // Handle triggered custom event from Footer or other widgets
   useEffect(() => {
     const handleOpenAvailability = () => {
+      availabilityTriggerRef.current = null;
       setAvailabilityOpen(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -56,6 +59,27 @@ export default function Header({ activePage, setActivePage }: HeaderProps) {
       window.removeEventListener('open-availability-check', handleOpenAvailability);
     };
   }, []);
+
+  useEffect(() => {
+    if (!availabilityOpen && !mobileMenuOpen) return;
+
+    const handleExpandedNavigationKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+
+      if (availabilityOpen) {
+        const returnFocusTarget = availabilityTriggerRef.current;
+        setAvailabilityOpen(false);
+        window.requestAnimationFrame(() => returnFocusTarget?.focus());
+        return;
+      }
+
+      setMobileMenuOpen(false);
+      window.requestAnimationFrame(() => mobileMenuButtonRef.current?.focus());
+    };
+
+    document.addEventListener('keydown', handleExpandedNavigationKeyDown);
+    return () => document.removeEventListener('keydown', handleExpandedNavigationKeyDown);
+  }, [availabilityOpen, mobileMenuOpen]);
 
   const navItems = [
     { id: 'house-watch' as ActivePage, label: 'House Watch', icon: Eye },
@@ -150,9 +174,11 @@ export default function Header({ activePage, setActivePage }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo / Brand Name */}
-          <div 
-            onClick={() => handleNavClickWithClose('home')} 
-            className="flex flex-col cursor-pointer group select-none pr-4"
+          <button
+            type="button"
+            onClick={() => handleNavClickWithClose('home')}
+            className="flex flex-col cursor-pointer group select-none pr-4 p-0 bg-transparent border-0 text-left"
+            aria-label="Go to Peace Love Home + Pet Watch home page"
           >
             <span className="font-extrabold text-sm sm:text-base md:text-lg tracking-normal leading-tight group-hover:opacity-90 transition-opacity duration-150">
               <span className="inline-flex items-center gap-1.5 sm:gap-2">
@@ -164,14 +190,19 @@ export default function Header({ activePage, setActivePage }: HeaderProps) {
                 <span className="text-[#100720]">Watch</span>
               </span>
             </span>
-          </div>
+          </button>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-2 lg:space-x-4">
             {/* CHECK AVAILABILITY interactive premium helper button */}
             <button
               id="header-check-availability-btn"
-              onClick={() => setAvailabilityOpen(!availabilityOpen)}
+              onClick={(event) => {
+                availabilityTriggerRef.current = event.currentTarget;
+                setAvailabilityOpen(!availabilityOpen);
+              }}
+              aria-expanded={availabilityOpen}
+              aria-controls="reservation-availability-dropdown"
               className={`flex items-center gap-1.5 px-4.5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-300 border-2 select-none cursor-pointer ${
                 availabilityOpen
                   ? 'bg-brand-plum border-brand-plum text-white shadow-md'
@@ -214,8 +245,11 @@ export default function Header({ activePage, setActivePage }: HeaderProps) {
           {/* Mobile Menu Button */}
           <div className="lg:hidden">
             <button
+              ref={mobileMenuButtonRef}
               id="mobile-menu-toggle"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation-drawer"
               className="p-2 rounded-lg text-brand-text/90 hover:bg-brand-stone/50 focus:outline-none"
               aria-label="Toggle menu"
             >
@@ -227,8 +261,10 @@ export default function Header({ activePage, setActivePage }: HeaderProps) {
 
       {/* Reservation time check interactive drop-down calendar panel */}
       {availabilityOpen && (
-        <div 
+        <div
           id="reservation-availability-dropdown"
+          role="region"
+          aria-label="Reservation availability calendar"
           className="absolute top-20 left-0 right-0 z-40 bg-[#160a28]/95 backdrop-blur-md shadow-2xl border-b border-[#9C5B7F]/30 text-white animate-in slide-in-from-top-4 duration-300 ease-out origin-top border-t border-white/5 py-8 px-4 sm:px-6 lg:px-8 font-sans max-h-[85vh] overflow-y-auto"
         >
           <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -486,10 +522,13 @@ export default function Header({ activePage, setActivePage }: HeaderProps) {
             {/* Mobile CHECK AVAILABILITY item */}
             <button
               id="mobile-nav-check-availability"
-              onClick={() => {
+              onClick={(event) => {
+                availabilityTriggerRef.current = event.currentTarget;
                 setAvailabilityOpen(!availabilityOpen);
                 setMobileMenuOpen(false);
               }}
+              aria-expanded={availabilityOpen}
+              aria-controls="reservation-availability-dropdown"
               className={`flex items-center gap-3.5 w-full px-4 py-3 rounded-xl text-left text-sm font-bold uppercase tracking-wider transition-all duration-150 border-l-4 ${
                 availabilityOpen
                   ? 'bg-[#9C5B7F]/10 text-brand-plum font-extrabold border-[#9C5B7F]'
