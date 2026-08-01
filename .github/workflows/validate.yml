@@ -24,7 +24,9 @@ jobs:
           package-manager-cache: false
 
       - name: Apply approved bounded remediation
-        run: python .github/scripts/apply-approved-remediation.py
+        run: |
+          python .github/scripts/apply-approved-remediation.py
+          python .github/scripts/fix-request-submit-markup.py
 
       - name: Generate deterministic npm lockfile
         working-directory: .source/peace-love-app-source
@@ -43,7 +45,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm .github/scripts/apply-approved-remediation.py .github/workflows/remediate-f01-f08.yml
+          git rm .github/scripts/apply-approved-remediation.py .github/scripts/fix-request-submit-markup.py .github/workflows/remediate-f01-f08.yml
           git add .gitignore .github/workflows/deploy.yml .github/workflows/validate.yml .source/peace-love-app-source
           git commit -m "Remediate approved QA findings F-01 through F-08"
           git push origin HEAD:${{ github.head_ref }}
