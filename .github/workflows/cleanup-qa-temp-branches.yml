@@ -1,0 +1,31 @@
+name: Clean Up QA Temporary Branches
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout cleanup branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: agent/cleanup-qa-temp-branches
+
+      - name: Delete remediation-only branches
+        shell: bash
+        run: |
+          git push origin --delete \
+            agent/qa-remediation-f01-f08 \
+            agent/post-deploy-verification \
+            agent/final-live-verification \
+            agent/final-accessibility-check \
+            agent/final-live-a11y-proof \
+            agent/cleanup-qa-temp-branches
