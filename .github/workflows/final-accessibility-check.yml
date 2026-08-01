@@ -1,0 +1,72 @@
+name: Final Accessibility Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      SITE_URL: https://workfolios.github.io/peace-love/
+    steps:
+      - name: Verify live bundle contains exact brand accessible name
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 12 --retry-delay 5 --retry-all-errors "$SITE_URL" -o /tmp/index.html
+          JS_PATH="$(python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('/tmp/index.html').read_text()
+          match = re.search(r'<script type="module" crossorigin src="([^"]+)"', html)
+          if not match:
+              raise SystemExit('Compiled JavaScript entry was not found')
+          print(match.group(1))
+          PY
+          )"
+          curl --fail --silent --show-error --location --retry 12 --retry-delay 5 --retry-all-errors "https://workfolios.github.io${JS_PATH}" -o /tmp/application.js
+          grep -Fq 'Peace Love Home + Pet Watch' /tmp/application.js
+          grep -Fq 'https://formspree.io/f/mqervbwa' /tmp/application.js
+
+      - name: Run live Lighthouse accessibility audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          LIGHTHOUSE_VERSION="$(npm view lighthouse version)"
+          npx --yes "lighthouse@${LIGHTHOUSE_VERSION}" "$SITE_URL" \
+            --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+            --only-categories=performance,accessibility,best-practices,seo \
+            --output=json --output-path=/tmp/lighthouse.json --quiet
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          report = json.loads(Path('/tmp/lighthouse.json').read_text())
+          scores = {name: round(category['score'] * 100) for name, category in report['categories'].items()}
+          audit = report['audits']['label-content-name-mismatch']
+          print('Final Lighthouse scores:', json.dumps(scores, sort_keys=True))
+          print('Accessible-name audit:', audit['score'], audit.get('displayValue'))
+          if audit['score'] != 1:
+              raise SystemExit('The exact visible brand accessible name still fails Lighthouse.')
+          Path('/tmp/lighthouse-scores.json').write_text(json.dumps(scores, indent=2, sort_keys=True) + '\n')
+          PY
+
+      - name: Upload final evidence
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4
+        with:
+          name: final-accessibility-check
+          path: |
+            /tmp/index.html
+            /tmp/application.js
+            /tmp/lighthouse.json
+            /tmp/lighthouse-scores.json
+          if-no-files-found: warn
+          retention-days: 1
