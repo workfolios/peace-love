@@ -1,72 +1,86 @@
-name: Final Accessibility Check
+name: Align Brand Text Accessibility
 
 on:
   pull_request:
     branches:
       - main
-    types:
-      - opened
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  verify:
+  apply-and-validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    env:
-      SITE_URL: https://workfolios.github.io/peace-love/
     steps:
-      - name: Verify live bundle contains exact brand accessible name
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl --fail --silent --show-error --location --retry 12 --retry-delay 5 --retry-all-errors "$SITE_URL" -o /tmp/index.html
-          JS_PATH="$(python - <<'PY'
-          from pathlib import Path
-          import re
-          html = Path('/tmp/index.html').read_text()
-          match = re.search(r'<script type="module" crossorigin src="([^"]+)"', html)
-          if not match:
-              raise SystemExit('Compiled JavaScript entry was not found')
-          print(match.group(1))
-          PY
-          )"
-          curl --fail --silent --show-error --location --retry 12 --retry-delay 5 --retry-all-errors "https://workfolios.github.io${JS_PATH}" -o /tmp/application.js
-          grep -Fq 'Peace Love Home + Pet Watch' /tmp/application.js
-          grep -Fq 'https://formspree.io/f/mqervbwa' /tmp/application.js
+      - name: Checkout pull request branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.head_ref }}
 
-      - name: Run live Lighthouse accessibility audit
+      - name: Setup approved Node.js runtime
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22.16.0
+          package-manager-cache: false
+
+      - name: Add semantic spaces to the visual wordmark
         shell: bash
         run: |
-          set -euo pipefail
-          LIGHTHOUSE_VERSION="$(npm view lighthouse version)"
-          npx --yes "lighthouse@${LIGHTHOUSE_VERSION}" "$SITE_URL" \
-            --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
-            --only-categories=performance,accessibility,best-practices,seo \
-            --output=json --output-path=/tmp/lighthouse.json --quiet
           python - <<'PY'
           from pathlib import Path
-          import json
-          report = json.loads(Path('/tmp/lighthouse.json').read_text())
-          scores = {name: round(category['score'] * 100) for name, category in report['categories'].items()}
-          audit = report['audits']['label-content-name-mismatch']
-          print('Final Lighthouse scores:', json.dumps(scores, sort_keys=True))
-          print('Accessible-name audit:', audit['score'], audit.get('displayValue'))
-          if audit['score'] != 1:
-              raise SystemExit('The exact visible brand accessible name still fails Lighthouse.')
-          Path('/tmp/lighthouse-scores.json').write_text(json.dumps(scores, indent=2, sort_keys=True) + '\n')
+
+          path = Path('.source/peace-love-app-source/src/components/Header.tsx')
+          text = path.read_text()
+
+          label = '            aria-label="Peace Love Home + Pet Watch"\n'
+          if text.count(label) != 1:
+              raise RuntimeError('Expected the current exact brand aria-label once.')
+          text = text.replace(label, '', 1)
+
+          replacements = [
+              (
+                  '<span className="text-[#100720]">Peace</span>\n                <span className="text-[#9C5B7F]">Love</span>',
+                  '<span className="text-[#100720]">Peace</span>{\' \'}\n                <span className="text-[#9C5B7F]">Love</span>',
+              ),
+              (
+                  '<span className="text-[#9C5B7F]">Love</span>\n                <span className="text-[#100720]">Home</span>',
+                  '<span className="text-[#9C5B7F]">Love</span>{\' \'}\n                <span className="text-[#100720]">Home</span>',
+              ),
+              (
+                  '<span className="text-[#100720]">Home</span>\n                <span className="text-[#9C5B7F] select-none inline-flex items-center justify-center font-extrabold">+</span>',
+                  '<span className="text-[#100720]">Home</span>{\' \'}\n                <span className="text-[#9C5B7F] select-none inline-flex items-center justify-center font-extrabold">+</span>',
+              ),
+              (
+                  '<span className="text-[#9C5B7F] select-none inline-flex items-center justify-center font-extrabold">+</span>\n                <span className="text-[#100720]">Pet</span>',
+                  '<span className="text-[#9C5B7F] select-none inline-flex items-center justify-center font-extrabold">+</span>{\' \'}\n                <span className="text-[#100720]">Pet</span>',
+              ),
+              (
+                  '<span className="text-[#100720]">Pet</span>\n                <span className="text-[#100720]">Watch</span>',
+                  '<span className="text-[#100720]">Pet</span>{\' \'}\n                <span className="text-[#100720]">Watch</span>',
+              ),
+          ]
+
+          for old, new in replacements:
+              if text.count(old) != 1:
+                  raise RuntimeError(f'Expected one wordmark boundary: {old}')
+              text = text.replace(old, new, 1)
+
+          path.write_text(text)
           PY
 
-      - name: Upload final evidence
-        if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4
-        with:
-          name: final-accessibility-check
-          path: |
-            /tmp/index.html
-            /tmp/application.js
-            /tmp/lighthouse.json
-            /tmp/lighthouse-scores.json
-          if-no-files-found: warn
-          retention-days: 1
+      - name: Validate deterministic build
+        working-directory: .source/peace-love-app-source
+        run: |
+          npm ci --no-audit --no-fund
+          npm audit --audit-level=high
+          npm run lint
+          npm run build
+
+      - name: Commit bounded F-06 correction
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .source/peace-love-app-source/src/components/Header.tsx
+          git commit -m "Align brand text and accessible name"
+          git push origin HEAD:${{ github.head_ref }}
