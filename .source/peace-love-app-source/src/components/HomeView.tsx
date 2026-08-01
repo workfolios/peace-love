@@ -1203,7 +1203,7 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
                       Thank You Neighbor!
                     </h4>
                     <p className="text-xs text-brand-plum/85 leading-relaxed max-w-sm font-semibold font-sans">
-                      Your public testimonial has been submitted. Because we respect local reputation, submissions go to Jamie Giedd for approval before spotlighting.
+                      Your testimonial has been saved in this browser as a website demonstration. It was not transmitted to Jamie Giedd or added to a shared approval queue.
                     </p>
                   </div>
                 </div>

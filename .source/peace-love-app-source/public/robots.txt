@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /peace-love/
+
+Sitemap: https://workfolios.github.io/peace-love/sitemap.xml

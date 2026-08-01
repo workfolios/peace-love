@@ -6,18 +6,17 @@ on:
       - main
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   validate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: .source/peace-love-app-source
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Restore and verify social preview
         run: python scripts/restore_social_preview.py
@@ -25,20 +24,27 @@ jobs:
       - name: Verify exact Google AI Studio source
         run: |
           test -f package.json
+          test -f package-lock.json
           test -f src/App.tsx
           test -f src/components/HomeView.tsx
           test -f src/components/AdminView.tsx
           test -f src/components/ClientPortalView.tsx
           test -f src/components/AssociatePortalView.tsx
           test -f public/assets/images/og-preview-hero-v6.png
+          test -f public/robots.txt
+          test -f public/sitemap.xml
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: 22
+          node-version: 22.16.0
+          package-manager-cache: false
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
+
+      - name: Audit dependency graph
+        run: npm audit --audit-level=high
 
       - name: Validate TypeScript
         run: npm run lint

@@ -66,6 +66,8 @@ export default function RequestView({ setActivePage }: RequestViewProps) {
 
   const [submitted, setSubmitted] = useState(false);
   const [showInquiryLog, setShowInquiryLog] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Form Field State
   const [name, setName] = useState('');
@@ -103,16 +105,18 @@ export default function RequestView({ setActivePage }: RequestViewProps) {
   }, []);
 
   // Handle Submit
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name || !phone || !email || !travelDates || !neighborhood) {
       alert('Please fill out all required basic contact fields (Name, Phone, Email, Dates, and Neighborhood) to proceed.');
       return;
     }
 
-    const newRequest: ServiceRequest = {
-      id: `req-${Date.now()}`,
-      createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+    setSubmitting(true);
+    setSubmitError(null);
+
+    const requestPayload = {
+      _subject: 'New Peace Love Home + Pet Watch inquiry',
       name,
       phone,
       email,
@@ -125,38 +129,51 @@ export default function RequestView({ setActivePage }: RequestViewProps) {
       petsDescription: serviceNeeded === 'House Watch Only' ? '' : petsDescription,
       specialHomeInstructions: serviceNeeded === 'Pet Care Only' ? '' : specialHomeInstructions,
       specialPetInstructions: serviceNeeded === 'House Watch Only' ? '' : specialPetInstructions,
-      emergencyContact: emergencyContact || 'Neighbor/Friend (Not specified)',
+      emergencyContact,
       preferredUpdateMethod,
-      additionalNotes,
-      status: 'Received'
+      additionalNotes
     };
 
-    const isCritical = (() => {
-      const keywords = ['insulin', 'medication', 'seizures', 'allergies', 'meds', 'rx', 'allergy', 'seizure', 'diabetic', 'chronic'];
-      const lower = (specialPetInstructions || '').toLowerCase();
-      return keywords.some(k => lower.includes(k));
-    })();
+    try {
+      const response = await fetch('https://formspree.io/f/mqervbwa', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestPayload)
+      });
 
-    const newNotification = {
-      id: `notif-${Date.now()}`,
-      text: isCritical 
-        ? `🔔 System Alert: New booking request received from a high-priority critical care pet (${name})`
-        : `🔔 System Alert: New booking request submitted for ${travelDates} by client ${name}.`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      read: false,
-      portal: 'admin'
-    };
+      if (!response.ok) {
+        let errorMessage = 'Your request could not be delivered. Please review your details and try again.';
+        try {
+          const result = await response.json() as {
+            error?: string;
+            errors?: Array<{ message?: string }>;
+          };
+          const providerMessage = result.errors
+            ?.map((item) => item.message)
+            .filter(Boolean)
+            .join(' ');
+          if (providerMessage) errorMessage = providerMessage;
+          else if (result.error) errorMessage = result.error;
+        } catch {
+          // Preserve the safe fallback when Formspree does not return JSON.
+        }
+        throw new Error(errorMessage);
+      }
 
-    const storedNotifs = localStorage.getItem('plh_notifications');
-    let parsedNotifs = [];
-    if (storedNotifs) {
-      try { parsedNotifs = JSON.parse(storedNotifs); } catch (e) {}
+      setSubmitted(true);
+    } catch (error) {
+      console.error('Formspree submission failed', error);
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : 'Your request could not be delivered. Please try again.'
+      );
+    } finally {
+      setSubmitting(false);
     }
-    localStorage.setItem('plh_notifications', JSON.stringify([newNotification, ...parsedNotifs]));
-    window.dispatchEvent(new Event('plh-notifications-update'));
-
-    setRequests([newRequest, ...requests]);
-    setSubmitted(true);
   };
 
   const resetForm = () => {
@@ -170,6 +187,8 @@ export default function RequestView({ setActivePage }: RequestViewProps) {
     setSpecialPetInstructions('');
     setEmergencyContact('');
     setAdditionalNotes('');
+    setSubmitError(null);
+    setSubmitting(false);
     setSubmitted(false);
   };
 
@@ -476,7 +495,7 @@ export default function RequestView({ setActivePage }: RequestViewProps) {
                     return (
                       <div className="mt-2 text-[11px] font-black uppercase tracking-wider text-pink-600 bg-pink-50 border border-pink-200 p-2.5 rounded-lg flex items-center gap-1.5 animate-pulse shadow-2xs text-left">
                         <span>⚠️ CRITICAL CARE ACTIVE:</span>
-                        <span className="font-semibold text-[10px] text-pink-500 normal-case">Staging this booking automatically flags it for Jamie's immediate attention.</span>
+                        <span className="font-semibold text-[10px] text-pink-500 normal-case">This care detail will be included in your request for Jamie's review.</span>
                       </div>
                     );
                   })()}
@@ -545,14 +564,26 @@ export default function RequestView({ setActivePage }: RequestViewProps) {
                 </p>
               </div>
 
+              {submitError && (
+                <div
+                  id="form-submission-error"
+                  role="alert"
+                  className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-semibold leading-relaxed text-red-800"
+                >
+                  {submitError}
+                </div>
+              )}
+
               <div className="flex items-center justify-end">
                 <button
                   type="submit"
                   id="submit-form-button"
-                  className="w-full sm:w-auto px-8 py-3.5 bg-[#100720] hover:bg-brand-plum-hover text-white font-bold text-xs uppercase tracking-wider rounded-full shadow-md cursor-pointer border-0 flex items-center justify-center gap-2 transition-all duration-150"
+                  disabled={submitting}
+                  aria-busy={submitting}
+                  className={`w-full sm:w-auto px-8 py-3.5 bg-[#100720] hover:bg-brand-plum-hover text-white font-bold text-xs uppercase tracking-wider rounded-full shadow-md border-0 flex items-center justify-center gap-2 transition-all duration-150 disabled:opacity-70 disabled:hover:bg-[#100720] ${submitting ? 'cursor-wait' : 'cursor-pointer'}`}
                 >
                   <ClipboardCheck className="w-4 h-4 text-white" />
-                  <span>Save Your Vacation Block</span>
+                  <span>{submitting ? 'Sending Your Request...' : 'Save Your Vacation Block'}</span>
                 </button>
               </div>
             </div>
