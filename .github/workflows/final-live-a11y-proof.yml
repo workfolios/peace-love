@@ -1,0 +1,78 @@
+name: Final Live Accessibility Proof
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      SITE_URL: https://workfolios.github.io/peace-love/
+    steps:
+      - name: Run final live Lighthouse audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          LIGHTHOUSE_VERSION="$(npm view lighthouse version)"
+          npx --yes "lighthouse@${LIGHTHOUSE_VERSION}" "$SITE_URL" \
+            --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+            --only-categories=performance,accessibility,best-practices,seo \
+            --output=json --output-path=/tmp/lighthouse.json --quiet
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          report = json.loads(Path('/tmp/lighthouse.json').read_text())
+          scores = {name: round(category['score'] * 100) for name, category in report['categories'].items()}
+          audit = report['audits']['label-content-name-mismatch']
+          print('Final Lighthouse scores:', json.dumps(scores, sort_keys=True))
+          print('Accessible-name audit:', audit['score'])
+          if audit['score'] != 1:
+              print(json.dumps(audit.get('details', {}), indent=2))
+              raise SystemExit('Live accessible-name audit did not pass.')
+          Path('/tmp/lighthouse-scores.json').write_text(json.dumps(scores, indent=2, sort_keys=True) + '\n')
+          PY
+
+      - name: Verify live crawler and Formspree markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 12 --retry-delay 5 --retry-all-errors "$SITE_URL" -o /tmp/index.html
+          curl --fail --silent --show-error --location --retry 12 --retry-delay 5 --retry-all-errors "${SITE_URL}robots.txt" -o /tmp/robots.txt
+          curl --fail --silent --show-error --location --retry 12 --retry-delay 5 --retry-all-errors "${SITE_URL}sitemap.xml" -o /tmp/sitemap.xml
+          JS_PATH="$(python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('/tmp/index.html').read_text()
+          match = re.search(r'<script type="module" crossorigin src="([^"]+)"', html)
+          if not match:
+              raise SystemExit('Compiled JavaScript entry was not found')
+          print(match.group(1))
+          PY
+          )"
+          curl --fail --silent --show-error --location --retry 12 --retry-delay 5 --retry-all-errors "https://workfolios.github.io${JS_PATH}" -o /tmp/application.js
+          grep -Fq 'https://formspree.io/f/mqervbwa' /tmp/application.js
+          grep -Fq 'Sitemap: https://workfolios.github.io/peace-love/sitemap.xml' /tmp/robots.txt
+          grep -Fq '<loc>https://workfolios.github.io/peace-love/</loc>' /tmp/sitemap.xml
+
+      - name: Upload final proof
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4
+        with:
+          name: final-live-a11y-proof
+          path: |
+            /tmp/lighthouse.json
+            /tmp/lighthouse-scores.json
+            /tmp/index.html
+            /tmp/robots.txt
+            /tmp/sitemap.xml
+            /tmp/application.js
+          if-no-files-found: warn
+          retention-days: 1
