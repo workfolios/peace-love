@@ -23,24 +23,8 @@ jobs:
           node-version: 22.16.0
           package-manager-cache: false
 
-      - name: Extract and apply approved remediation
-        shell: bash
-        run: |
-          python - <<'EXTRACT'
-          from pathlib import Path
-
-          workflow = Path('.github/workflows/remediate-f01-f08.yml').read_text()
-          marker = "          python - <<'PY'\n"
-          start = workflow.index(marker) + len(marker)
-          end = workflow.index("\n          PY\n", start)
-          embedded = workflow[start:end]
-          script = '\n'.join(
-              line[10:] if line.startswith('          ') else line
-              for line in embedded.splitlines()
-          ) + '\n'
-          Path('/tmp/apply-approved-remediation.py').write_text(script)
-          EXTRACT
-          python /tmp/apply-approved-remediation.py
+      - name: Apply approved bounded remediation
+        run: python .github/scripts/apply-approved-remediation.py
 
       - name: Generate deterministic npm lockfile
         working-directory: .source/peace-love-app-source
@@ -59,7 +43,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm .github/workflows/remediate-f01-f08.yml
+          git rm .github/scripts/apply-approved-remediation.py .github/workflows/remediate-f01-f08.yml
           git add .gitignore .github/workflows/deploy.yml .github/workflows/validate.yml .source/peace-love-app-source
           git commit -m "Remediate approved QA findings F-01 through F-08"
           git push origin HEAD:${{ github.head_ref }}
