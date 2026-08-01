@@ -40,12 +40,12 @@ jobs:
           npm run lint
           npm run build
 
-      - name: Commit bounded remediation to the branch
+      - name: Commit validated application remediation
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm .github/scripts/apply-approved-remediation.py .github/scripts/fix-request-submit-markup.py .github/workflows/remediate-f01-f08.yml
-          git add .gitignore .github/workflows/deploy.yml .github/workflows/validate.yml .source/peace-love-app-source
-          git commit -m "Remediate approved QA findings F-01 through F-08"
+          git restore .github/workflows/deploy.yml .github/workflows/validate.yml
+          git add .gitignore .source/peace-love-app-source
+          git commit -m "Remediate approved application findings F-01 and F-04 through F-08"
           git push origin HEAD:${{ github.head_ref }}
