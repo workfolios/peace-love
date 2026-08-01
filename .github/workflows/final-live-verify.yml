@@ -31,15 +31,14 @@ jobs:
 
           path = Path('.source/peace-love-app-source/src/components/Header.tsx')
           text = path.read_text()
-          old = '''            className="flex flex-col cursor-pointer group select-none pr-4 p-0 bg-transparent border-0 text-left"
-          >'''
-          new = '''            className="flex flex-col cursor-pointer group select-none pr-4 p-0 bg-transparent border-0 text-left"
-            aria-label="Peace Love Home + Pet Watch"
-          >'''
-          count = text.count(old)
+          marker = '            className="flex flex-col cursor-pointer group select-none pr-4 p-0 bg-transparent border-0 text-left"\n'
+          replacement = marker + '            aria-label="Peace Love Home + Pet Watch"\n'
+          if 'aria-label="Peace Love Home + Pet Watch"' in text:
+              raise RuntimeError('The exact brand accessible name is already present.')
+          count = text.count(marker)
           if count != 1:
-              raise RuntimeError(f'Expected one semantic brand button marker, found {count}')
-          path.write_text(text.replace(old, new, 1))
+              raise RuntimeError(f'Expected one semantic brand button class marker, found {count}')
+          path.write_text(text.replace(marker, replacement, 1))
           PY
 
       - name: Validate deterministic build
