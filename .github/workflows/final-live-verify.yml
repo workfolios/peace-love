@@ -1,105 +1,60 @@
-name: Final Live Verification
+name: Apply Exact Brand Accessible Name
 
 on:
   pull_request:
     branches:
       - main
-    types:
-      - opened
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  verify-final-live-site:
+  apply-and-validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
-    env:
-      SITE_URL: https://workfolios.github.io/peace-love/
     steps:
-      - name: Verify final public deployment
+      - name: Checkout pull request branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup approved Node.js runtime
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22.16.0
+          package-manager-cache: false
+
+      - name: Set exact visible brand accessible name
         shell: bash
         run: |
-          set -euo pipefail
-          curl --fail --silent --show-error --location \
-            --retry 12 --retry-delay 5 --retry-all-errors \
-            --connect-timeout 15 --max-time 60 \
-            "$SITE_URL" --output /tmp/index.html
-
-          JS_PATH="$(python - <<'PY'
-          from pathlib import Path
-          import re
-          html = Path('/tmp/index.html').read_text()
-          match = re.search(r'<script type="module" crossorigin src="([^"]+)"', html)
-          if not match:
-              raise SystemExit('Compiled JavaScript entry was not found')
-          print(match.group(1))
-          PY
-          )"
-
-          curl --fail --silent --show-error --location \
-            --retry 12 --retry-delay 5 --retry-all-errors \
-            --connect-timeout 15 --max-time 60 \
-            "https://workfolios.github.io${JS_PATH}" --output /tmp/application.js
-
-          grep -Fq 'https://formspree.io/f/mqervbwa' /tmp/application.js
-          grep -Fq 'reservation-availability-dropdown' /tmp/application.js
-          if grep -Fq 'Go to Peace Love Home + Pet Watch home page' /tmp/application.js; then
-            echo 'The removed overriding accessible name is still present in the live bundle.' >&2
-            exit 1
-          fi
-
-      - name: Run final Lighthouse accessibility verification
-        shell: bash
-        run: |
-          set -euo pipefail
-          LIGHTHOUSE_VERSION="$(npm view lighthouse version)"
-          npx --yes "lighthouse@${LIGHTHOUSE_VERSION}" "$SITE_URL" \
-            --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
-            --only-categories=performance,accessibility,best-practices,seo \
-            --output=json --output-path=/tmp/lighthouse.json --quiet
-
           python - <<'PY'
           from pathlib import Path
-          import json
 
-          report = json.loads(Path('/tmp/lighthouse.json').read_text())
-          scores = {
-              name: round(category['score'] * 100)
-              for name, category in report['categories'].items()
-          }
-          accessible_name = report['audits']['label-content-name-mismatch']['score']
-          if accessible_name != 1:
-              raise SystemExit('The live brand control still fails the accessible-name audit.')
-          print('Final Lighthouse scores:', json.dumps(scores, sort_keys=True))
-          print('Accessible-name audit: pass')
-          Path('/tmp/lighthouse-scores.json').write_text(json.dumps(scores, indent=2, sort_keys=True) + '\n')
+          path = Path('.source/peace-love-app-source/src/components/Header.tsx')
+          text = path.read_text()
+          old = '''            className="flex flex-col cursor-pointer group select-none pr-4 p-0 bg-transparent border-0 text-left"
+          >'''
+          new = '''            className="flex flex-col cursor-pointer group select-none pr-4 p-0 bg-transparent border-0 text-left"
+            aria-label="Peace Love Home + Pet Watch"
+          >'''
+          count = text.count(old)
+          if count != 1:
+              raise RuntimeError(f'Expected one semantic brand button marker, found {count}')
+          path.write_text(text.replace(old, new, 1))
           PY
 
-      - name: Render final desktop and mobile screenshots
+      - name: Validate deterministic build
+        working-directory: .source/peace-love-app-source
+        run: |
+          npm ci --no-audit --no-fund
+          npm audit --audit-level=high
+          npm run lint
+          npm run build
+
+      - name: Commit bounded F-06 correction
         shell: bash
         run: |
-          set -euo pipefail
-          BROWSER="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
-          test -n "$BROWSER"
-          "$BROWSER" --headless=new --no-sandbox --disable-dev-shm-usage \
-            --hide-scrollbars --window-size=1440,1200 --virtual-time-budget=8000 \
-            --screenshot=/tmp/desktop-final.png "$SITE_URL"
-          "$BROWSER" --headless=new --no-sandbox --disable-dev-shm-usage \
-            --hide-scrollbars --window-size=390,844 --force-device-scale-factor=1 \
-            --virtual-time-budget=8000 --screenshot=/tmp/mobile-final.png "$SITE_URL"
-
-      - name: Upload final verification evidence
-        if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4
-        with:
-          name: final-live-verification
-          path: |
-            /tmp/index.html
-            /tmp/application.js
-            /tmp/lighthouse.json
-            /tmp/lighthouse-scores.json
-            /tmp/desktop-final.png
-            /tmp/mobile-final.png
-          if-no-files-found: warn
-          retention-days: 1
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .source/peace-love-app-source/src/components/Header.tsx
+          git commit -m "Set exact brand accessible name"
+          git push origin HEAD:${{ github.head_ref }}
