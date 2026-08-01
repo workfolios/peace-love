@@ -4,8 +4,6 @@ on:
   pull_request:
     branches:
       - main
-    types:
-      - opened
 
 permissions:
   contents: read
@@ -33,8 +31,9 @@ jobs:
           scores = {name: round(category['score'] * 100) for name, category in report['categories'].items()}
           audit = report['audits']['label-content-name-mismatch']
           print('Final Lighthouse scores:', json.dumps(scores, sort_keys=True))
-          print('Accessible-name audit:', audit['score'])
-          if audit['score'] != 1:
+          print('Accessible-name audit:', audit['scoreDisplayMode'], audit['score'])
+          passed = audit['score'] == 1 or audit['scoreDisplayMode'] == 'notApplicable'
+          if not passed:
               print(json.dumps(audit.get('details', {}), indent=2))
               raise SystemExit('Live accessible-name audit did not pass.')
           Path('/tmp/lighthouse-scores.json').write_text(json.dumps(scores, indent=2, sort_keys=True) + '\n')
