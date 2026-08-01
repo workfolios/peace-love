@@ -178,6 +178,7 @@ export default function Header({ activePage, setActivePage }: HeaderProps) {
             type="button"
             onClick={() => handleNavClickWithClose('home')}
             className="flex flex-col cursor-pointer group select-none pr-4 p-0 bg-transparent border-0 text-left"
+            aria-label="Peace Love Home + Pet Watch"
           >
             <span className="font-extrabold text-sm sm:text-base md:text-lg tracking-normal leading-tight group-hover:opacity-90 transition-opacity duration-150">
               <span className="inline-flex items-center gap-1.5 sm:gap-2">
