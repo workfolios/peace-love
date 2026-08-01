@@ -1,0 +1,44 @@
+name: Correct Header Accessible Name
+
+on:
+  push:
+    branches:
+      - agent/post-deploy-verification
+    paths:
+      - .github/workflows/fix-header-accessible-name.yml
+
+permissions:
+  contents: write
+
+jobs:
+  correct:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout verification branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: agent/post-deploy-verification
+
+      - name: Remove mismatched overriding accessible name
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('.source/peace-love-app-source/src/components/Header.tsx')
+          text = path.read_text()
+          target = '            aria-label="Go to Peace Love Home + Pet Watch home page"\n'
+          count = text.count(target)
+          if count != 1:
+              raise RuntimeError(f'Expected one brand-button aria-label, found {count}')
+          path.write_text(text.replace(target, '', 1))
+          PY
+
+      - name: Commit bounded F-06 correction
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .source/peace-love-app-source/src/components/Header.tsx
+          git commit -m "Correct header brand accessible name"
+          git push origin HEAD:agent/post-deploy-verification
