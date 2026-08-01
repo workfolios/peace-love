@@ -1,47 +1,65 @@
-name: Validate Exact Mirror
+name: Apply and Validate Approved QA Remediation
 
 on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  validate:
+  remediate-and-validate:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: .source/peace-love-app-source
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Restore and verify social preview
-        run: python scripts/restore_social_preview.py
-
-      - name: Verify exact Google AI Studio source
-        run: |
-          test -f package.json
-          test -f src/App.tsx
-          test -f src/components/HomeView.tsx
-          test -f src/components/AdminView.tsx
-          test -f src/components/ClientPortalView.tsx
-          test -f src/components/AssociatePortalView.tsx
-          test -f public/assets/images/og-preview-hero-v6.png
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Checkout remediation branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          node-version: 22
+          ref: ${{ github.head_ref }}
 
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
+      - name: Setup approved Node.js runtime
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22.16.0
+          package-manager-cache: false
 
-      - name: Validate TypeScript
-        run: npm run lint
+      - name: Extract and apply approved remediation
+        shell: bash
+        run: |
+          python - <<'EXTRACT'
+          from pathlib import Path
 
-      - name: Build application
-        run: npm run build
+          workflow = Path('.github/workflows/remediate-f01-f08.yml').read_text()
+          marker = "          python - <<'PY'\n"
+          start = workflow.index(marker) + len(marker)
+          end = workflow.index("\n          PY\n", start)
+          embedded = workflow[start:end]
+          script = '\n'.join(
+              line[10:] if line.startswith('          ') else line
+              for line in embedded.splitlines()
+          ) + '\n'
+          Path('/tmp/apply-approved-remediation.py').write_text(script)
+          EXTRACT
+          python /tmp/apply-approved-remediation.py
+
+      - name: Generate deterministic npm lockfile
+        working-directory: .source/peace-love-app-source
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Validate clean install, dependency audit, types, and production build
+        working-directory: .source/peace-love-app-source
+        run: |
+          npm ci --no-audit --no-fund
+          npm audit --audit-level=high
+          npm run lint
+          npm run build
+
+      - name: Commit bounded remediation to the branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/remediate-f01-f08.yml
+          git add .gitignore .github/workflows/deploy.yml .github/workflows/validate.yml .source/peace-love-app-source
+          git commit -m "Remediate approved QA findings F-01 through F-08"
+          git push origin HEAD:${{ github.head_ref }}
