@@ -6,12 +6,6 @@ on:
       - main
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-  statuses: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -19,12 +13,14 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: .source/peace-love-app-source
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Restore and verify social preview
         run: python scripts/restore_social_preview.py
@@ -32,20 +28,27 @@ jobs:
       - name: Verify exact Google AI Studio source
         run: |
           test -f package.json
+          test -f package-lock.json
           test -f src/App.tsx
           test -f src/components/HomeView.tsx
           test -f src/components/AdminView.tsx
           test -f src/components/ClientPortalView.tsx
           test -f src/components/AssociatePortalView.tsx
           test -f public/assets/images/og-preview-hero-v6.png
+          test -f public/robots.txt
+          test -f public/sitemap.xml
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: 22
+          node-version: 22.16.0
+          package-manager-cache: false
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
+
+      - name: Audit production dependency graph
+        run: npm audit --audit-level=high
 
       - name: Validate TypeScript
         run: npm run lint
@@ -54,10 +57,10 @@ jobs:
         run: npm run build
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v6
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v5
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
           path: ./.source/peace-love-app-source/dist
 
@@ -67,10 +70,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      pages: write
+      id-token: write
     steps:
       - name: Deploy
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
 
   report:
     name: Report deployment status
@@ -79,6 +85,8 @@ jobs:
     needs:
       - build
       - deploy
+    permissions:
+      statuses: write
     steps:
       - name: Publish commit status
         env:
