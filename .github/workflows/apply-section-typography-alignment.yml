@@ -1,0 +1,80 @@
+name: Apply Section Typography Alignment
+
+on:
+  push:
+    branches:
+      - agent/align-pricing-faq-section-typography
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout correction branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: agent/align-pricing-faq-section-typography
+
+      - name: Setup approved Node.js runtime
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22.16.0
+          package-manager-cache: false
+
+      - name: Align pricing and FAQ typography with section grammar
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.source/peace-love-app-source/src/components/HomeView.tsx')
+          text = path.read_text()
+
+          replacements = {
+              "  const moduleTitleClass = 'text-2xl font-bold text-[#100720] tracking-tight';\n": "",
+              "  const moduleEyebrowClass = 'text-xs! text-[#9C5B7F] font-bold uppercase tracking-wider';\n": "",
+              '<h3 className={moduleTitleClass}>Transparent Neighbor Pricing Tiers</h3>': '<h3 className={sectionTitleClass}>Transparent Neighbor Pricing Tiers</h3>',
+              '<p className={moduleEyebrowClass}>No hidden fees, simple local rates in Rapid City</p>': '<p className={`${sectionSubtitleClass} font-sans`}>No hidden fees, simple local rates in Rapid City</p>',
+              '<h3 className={moduleTitleClass}>Frequently Asked Questions</h3>': '<h3 className={sectionTitleClass}>Frequently Asked Questions</h3>',
+              '<p className={moduleEyebrowClass}>Quick answers about our local neighborhood standard</p>': '<p className={`${sectionSubtitleClass} font-sans`}>Quick answers about our local neighborhood standard</p>',
+          }
+
+          for old, new in replacements.items():
+              count = text.count(old)
+              if count != 1:
+                  raise RuntimeError(f'Expected exactly one occurrence, found {count}: {old}')
+              text = text.replace(old, new)
+
+          path.write_text(text)
+          PY
+
+      - name: Validate deterministic release gate
+        working-directory: .source/peace-love-app-source
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npm audit --audit-level=high
+          npm run lint
+          npm run build
+
+      - name: Verify bounded diff and target hierarchy
+        run: |
+          set -euo pipefail
+          git diff --check
+          changed="$(git status --short --untracked-files=no | awk '{print $2}')"
+          test "$changed" = ".source/peace-love-app-source/src/components/HomeView.tsx"
+          grep -Fq '<h3 className={sectionTitleClass}>Transparent Neighbor Pricing Tiers</h3>' .source/peace-love-app-source/src/components/HomeView.tsx
+          grep -Fq '<h3 className={sectionTitleClass}>Frequently Asked Questions</h3>' .source/peace-love-app-source/src/components/HomeView.tsx
+          grep -Fq 'No hidden fees, simple local rates in Rapid City</p>' .source/peace-love-app-source/src/components/HomeView.tsx
+          grep -Fq 'Quick answers about our local neighborhood standard</p>' .source/peace-love-app-source/src/components/HomeView.tsx
+          ! grep -Fq 'moduleTitleClass' .source/peace-love-app-source/src/components/HomeView.tsx
+          ! grep -Fq 'moduleEyebrowClass' .source/peace-love-app-source/src/components/HomeView.tsx
+
+      - name: Commit bounded correction
+        run: |
+          set -euo pipefail
+          git config user.name "Workfolio Studio"
+          git config user.email "brian.j.curr@gmail.com"
+          git add .source/peace-love-app-source/src/components/HomeView.tsx
+          git commit -m "Align pricing and FAQ section typography"
+          git push origin HEAD:agent/align-pricing-faq-section-typography
