@@ -209,8 +209,6 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
   const sectionTitleClass = 'text-3xl sm:text-4xl font-bold tracking-tight text-[#100720]';
   const sectionTitleInverseClass = 'text-3xl sm:text-4xl font-bold tracking-tight text-white';
   const sectionSubtitleClass = 'text-sm! sm:text-base! font-semibold text-brand-text/85 leading-relaxed!';
-  const moduleTitleClass = 'text-2xl font-bold text-[#100720] tracking-tight';
-  const moduleEyebrowClass = 'text-xs! text-[#9C5B7F] font-bold uppercase tracking-wider';
 
   return (
     <div id="home-view" className="bg-white min-h-screen">
@@ -582,8 +580,8 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
           {/* New Interactive Pricing Matrix Row */}
           <div className="pt-16 border-t border-[#100720]/10 space-y-8">
             <div className="text-center space-y-2">
-              <h3 className={moduleTitleClass}>Transparent Neighbor Pricing Tiers</h3>
-              <p className={moduleEyebrowClass}>No hidden fees, simple local rates in Rapid City</p>
+              <h3 className={sectionTitleClass}>Transparent Neighbor Pricing Tiers</h3>
+              <p className={`${sectionSubtitleClass} font-sans`}>No hidden fees, simple local rates in Rapid City</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -709,8 +707,8 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
           {/* Minimal Elegant FAQ Accordion Block */}
           <div className="pt-16 border-t border-[#100720]/10 max-w-3xl mx-auto space-y-6">
             <div className="text-center space-y-2">
-              <h3 className={moduleTitleClass}>Frequently Asked Questions</h3>
-              <p className={moduleEyebrowClass}>Quick answers about our local neighborhood standard</p>
+              <h3 className={sectionTitleClass}>Frequently Asked Questions</h3>
+              <p className={`${sectionSubtitleClass} font-sans`}>Quick answers about our local neighborhood standard</p>
             </div>
 
             <div className="space-y-4">
