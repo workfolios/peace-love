@@ -1,4 +1,4 @@
-name: Confirm Nanoid Lockfile Remediation
+name: Apply Home Heading Grammar and Security Fix
 
 on:
   push:
@@ -6,10 +6,10 @@ on:
       - agent/home-heading-grammar
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  diagnose:
+  apply-and-validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout remediation branch
@@ -23,16 +23,79 @@ jobs:
           node-version: 22.16.0
           package-manager-cache: false
 
-      - name: Confirm ephemeral lockfile-only security fix
+      - name: Apply bounded Home typography grammar
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('.source/peace-love-app-source/src/components/HomeView.tsx')
+          text = path.read_text()
+
+          if "const sectionTitleClass =" in text:
+              print('Home typography grammar already applied; validation only.')
+          else:
+              def replace_exact(old: str, new: str, expected: int = 1):
+                  global text
+                  count = text.count(old)
+                  if count != expected:
+                      raise RuntimeError(f'Expected {expected} occurrence(s), found {count}: {old[:100]}')
+                  text = text.replace(old, new)
+
+              marker = """  const handleNavClick = (page: ActivePage) => {\n    setActivePage(page);\n    window.scrollTo({ top: 0, behavior: 'smooth' });\n  };\n\n  return ("""
+              replacement = """  const handleNavClick = (page: ActivePage) => {\n    setActivePage(page);\n    window.scrollTo({ top: 0, behavior: 'smooth' });\n  };\n\n  // Home-page typography grammar: primary section title, inverse title,\n  // supporting subtitle, nested module title, and module eyebrow.\n  const sectionTitleClass = 'text-3xl sm:text-4xl font-bold tracking-tight text-[#100720]';\n  const sectionTitleInverseClass = 'text-3xl sm:text-4xl font-bold tracking-tight text-white';\n  const sectionSubtitleClass = 'text-sm sm:text-base font-semibold text-brand-text/85 leading-relaxed';\n  const moduleTitleClass = 'text-2xl font-bold text-[#100720] tracking-tight';\n  const moduleEyebrowClass = 'text-xs text-[#9C5B7F] font-bold uppercase tracking-wider';\n\n  return ("""
+              replace_exact(marker, replacement)
+
+              replace_exact('className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#100720] animate-fade-in"', 'className={`${sectionTitleClass} animate-fade-in`}')
+              replace_exact('className="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-text"', 'className={sectionTitleClass}')
+              replace_exact('className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white"', 'className={sectionTitleInverseClass}')
+              replace_exact('className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#100720]"', 'className={sectionTitleClass}', expected=4)
+              replace_exact('className="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-plum animate-fade-in"', 'className={`${sectionTitleClass} animate-fade-in`}')
+
+              replace_exact('className="text-sm text-brand-text/80 max-w-lg mx-auto font-medium"', 'className={`${sectionSubtitleClass} max-w-lg mx-auto`}')
+              replace_exact('className="text-sm text-[#100720]/80 max-w-xl mx-auto font-semibold"', 'className={`${sectionSubtitleClass} max-w-xl mx-auto`}')
+              replace_exact('className="text-base font-semibold text-[#1F1F1F] leading-relaxed font-sans"', 'className={`${sectionSubtitleClass} font-sans`}')
+              replace_exact('className="text-sm font-semibold text-[#9C5B7F]/80 leading-relaxed max-w-xl"', 'className={`${sectionSubtitleClass} max-w-xl`}')
+
+              replace_exact('className="text-2xl font-extrabold text-[#100720] tracking-tight"', 'className={moduleTitleClass}')
+              replace_exact('className="text-2.5xl font-extrabold text-[#100720] tracking-tight"', 'className={moduleTitleClass}')
+              replace_exact('<p className="text-xs text-[#9C5B7F] font-bold uppercase tracking-wider">No hidden fees, simple local rates in Rapid City</p>', '<p className={moduleEyebrowClass}>No hidden fees, simple local rates in Rapid City</p>')
+              replace_exact('<p className="text-xs text-[#9C5B7F] font-bold uppercase tracking-wider">Quick answers about our local neighborhood standard</p>', '<p className={moduleEyebrowClass}>Quick answers about our local neighborhood standard</p>')
+
+              path.write_text(text)
+          PY
+
+      - name: Apply authorized lockfile-only nanoid security fix
         working-directory: .source/peace-love-app-source
         run: |
           set -euo pipefail
           npm ci --no-audit --no-fund
           npm audit fix --package-lock-only
-          echo "--- Resolved nanoid dependency path ---"
-          npm ls nanoid || true
-          echo "--- Post-fix high-severity audit ---"
+          rm -rf node_modules
+          npm ci --no-audit --no-fund
+          test "$(npm ls nanoid --json | node -e \"let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const j=JSON.parse(s);const a=j.dependencies?.autoprefixer?.dependencies?.postcss?.dependencies?.nanoid?.version;process.stdout.write(a||'')})\")" = "3.3.18"
           npm audit --audit-level=high
-          echo "--- Ephemeral lockfile diff only; not committed ---"
-          git diff -- package-lock.json
-          test -z "$(git status --short --untracked-files=no | grep -v 'package-lock.json' || true)"
+          npm run lint
+          npm run build
+
+      - name: Verify bounded diff
+        run: |
+          set -euo pipefail
+          git diff --check
+          changed="$(git status --short --untracked-files=no | awk '{print $2}' | sort)"
+          expected="$(printf '%s\n' '.source/peace-love-app-source/package-lock.json' '.source/peace-love-app-source/src/components/HomeView.tsx' | sort)"
+          test "$changed" = "$expected"
+          git diff -- .source/peace-love-app-source/src/components/HomeView.tsx
+          git diff -- .source/peace-love-app-source/package-lock.json
+
+      - name: Commit approved corrections
+        run: |
+          set -euo pipefail
+          git config user.name "Workfolio Studio"
+          git config user.email "brian.j.curr@gmail.com"
+          git add .source/peace-love-app-source/src/components/HomeView.tsx .source/peace-love-app-source/package-lock.json
+          if git diff --cached --quiet; then
+            echo "No application changes to commit."
+            exit 0
+          fi
+          git commit -m "Standardize Home heading grammar and refresh nanoid lock"
+          git push origin HEAD:agent/home-heading-grammar
