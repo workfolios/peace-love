@@ -204,6 +204,14 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Home-page typography grammar: primary section title, inverse title,
+  // supporting subtitle, nested module title, and module eyebrow.
+  const sectionTitleClass = 'text-3xl sm:text-4xl font-bold tracking-tight text-[#100720]';
+  const sectionTitleInverseClass = 'text-3xl sm:text-4xl font-bold tracking-tight text-white';
+  const sectionSubtitleClass = 'text-sm sm:text-base font-semibold text-brand-text/85 leading-relaxed';
+  const moduleTitleClass = 'text-2xl font-bold text-[#100720] tracking-tight';
+  const moduleEyebrowClass = 'text-xs text-[#9C5B7F] font-bold uppercase tracking-wider';
+
   return (
     <div id="home-view" className="bg-white min-h-screen">
       
@@ -333,7 +341,7 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
             {/* Profile Copy Block */}
             <div id="jamie-profile-text" className="md:col-span-7 space-y-6 flex flex-col justify-center">
               <div className="space-y-2">
-                <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#100720] animate-fade-in">
+                <h2 className={`${sectionTitleClass} animate-fade-in`}>
                   Hey, I’m Jamie
                 </h2>
               </div>
@@ -361,8 +369,8 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
         <div className="max-w-5xl mx-auto space-y-12">
           
           <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-text">Choose What You Need</h2>
-            <p className="text-sm text-brand-text/80 max-w-lg mx-auto font-medium">
+            <h2 className={sectionTitleClass}>Choose What You Need</h2>
+            <p className={`${sectionSubtitleClass} max-w-lg mx-auto`}>
               Select the pathway that works best for your travel plans.
             </p>
           </div>
@@ -437,7 +445,7 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
         <div className="max-w-5xl mx-auto space-y-12">
           
           <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">Simple Start, Clear Follow-Through</h2>
+            <h2 className={sectionTitleInverseClass}>Simple Start, Clear Follow-Through</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
@@ -485,8 +493,8 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
         <div className="max-w-4xl mx-auto space-y-16 font-sans">
           
           <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#100720]">Services</h2>
-            <p className="text-sm text-[#100720]/80 max-w-xl mx-auto font-semibold">
+            <h2 className={sectionTitleClass}>Services</h2>
+            <p className={`${sectionSubtitleClass} max-w-xl mx-auto`}>
               Practical check-ins for homes, pets, plants, packages, and routines.
             </p>
           </div>
@@ -574,8 +582,8 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
           {/* New Interactive Pricing Matrix Row */}
           <div className="pt-16 border-t border-[#100720]/10 space-y-8">
             <div className="text-center space-y-2">
-              <h3 className="text-2xl font-extrabold text-[#100720] tracking-tight">Transparent Neighbor Pricing Tiers</h3>
-              <p className="text-xs text-[#9C5B7F] font-bold uppercase tracking-wider">No hidden fees, simple local rates in Rapid City</p>
+              <h3 className={moduleTitleClass}>Transparent Neighbor Pricing Tiers</h3>
+              <p className={moduleEyebrowClass}>No hidden fees, simple local rates in Rapid City</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -656,10 +664,10 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
       <section id="neighbor-standard-trust" className="bg-white text-[#100720] py-24 px-4 sm:px-6 lg:px-8 border-b border-[#100720]/10">
         <div className="max-w-5xl mx-auto space-y-16">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#100720]">
+            <h2 className={sectionTitleClass}>
               The Neighbor Standard
             </h2>
-            <p className="text-base font-semibold text-[#1F1F1F] leading-relaxed font-sans">
+            <p className={`${sectionSubtitleClass} font-sans`}>
               Dedicated visual check-ins that help your home feel cared for while you are away.
             </p>
           </div>
@@ -701,8 +709,8 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
           {/* Minimal Elegant FAQ Accordion Block */}
           <div className="pt-16 border-t border-[#100720]/10 max-w-3xl mx-auto space-y-6">
             <div className="text-center space-y-2">
-              <h3 className="text-2.5xl font-extrabold text-[#100720] tracking-tight">Frequently Asked Questions</h3>
-              <p className="text-xs text-[#9C5B7F] font-bold uppercase tracking-wider">Quick answers about our local neighborhood standard</p>
+              <h3 className={moduleTitleClass}>Frequently Asked Questions</h3>
+              <p className={moduleEyebrowClass}>Quick answers about our local neighborhood standard</p>
             </div>
 
             <div className="space-y-4">
@@ -765,10 +773,10 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
           
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-3 text-center md:text-left">
-              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#100720]">
+              <h2 className={sectionTitleClass}>
                 Stories from Around the Neighborhood
               </h2>
-              <p className="text-sm font-semibold text-[#9C5B7F]/80 leading-relaxed max-w-xl">
+              <p className={`${sectionSubtitleClass} max-w-xl`}>
                 Real care, documented feedback, and neighborly peace of mind across the Black Hills.
               </p>
             </div>
@@ -1293,7 +1301,7 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
       {/* 6. Request CTA Section (Bright White Background) */}
       <section id="bottom-cta-section" className="px-4 py-24 sm:px-6 lg:px-8 bg-white text-brand-text border-t border-brand-plum/10 text-center">
         <div className="max-w-2xl mx-auto space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-plum animate-fade-in">Ready to Travel?</h2>
+          <h2 className={`${sectionTitleClass} animate-fade-in`}>Ready to Travel?</h2>
           <div className="pt-4">
             <button
               id="bottom-start-request-btn"
@@ -1310,7 +1318,7 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
       <section id="standby-reserve-cta" className="px-4 py-24 sm:px-6 lg:px-8 bg-[#FDF8FB] border-t border-brand-plum/10 text-center font-sans">
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="space-y-4">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#100720]">Join the Prairie Land Reserve Network</h2>
+            <h2 className={sectionTitleClass}>Join the Prairie Land Reserve Network</h2>
             <p className="text-base text-brand-plum/80 max-w-2xl mx-auto font-medium leading-relaxed">
               Are you reliable, experienced with pets, and interested in occasional, flexible shift coverage? 
               Apply to join our tested standby list. Set your own availability calendar, pass a background check, 
