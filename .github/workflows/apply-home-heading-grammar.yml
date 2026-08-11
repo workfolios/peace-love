@@ -1,4 +1,4 @@
-name: Diagnose Nanoid Advisory
+name: Confirm Nanoid Lockfile Remediation
 
 on:
   push:
@@ -23,16 +23,16 @@ jobs:
           node-version: 22.16.0
           package-manager-cache: false
 
-      - name: Diagnose transitive advisory without committing changes
+      - name: Confirm ephemeral lockfile-only security fix
         working-directory: .source/peace-love-app-source
         run: |
           set -euo pipefail
           npm ci --no-audit --no-fund
-          echo "--- Installed nanoid dependency path ---"
+          npm audit fix --package-lock-only
+          echo "--- Resolved nanoid dependency path ---"
           npm ls nanoid || true
-          echo "--- Fixed nanoid release check ---"
-          npm view nanoid@3.3.17 version
-          echo "--- Lockfile-only audit fix dry run ---"
-          npm audit fix --package-lock-only --dry-run || true
-          echo "--- Dry-run repository diff ---"
-          git diff -- package-lock.json || true
+          echo "--- Post-fix high-severity audit ---"
+          npm audit --audit-level=high
+          echo "--- Ephemeral lockfile diff only; not committed ---"
+          git diff -- package-lock.json
+          test -z "$(git status --short --untracked-files=no | grep -v 'package-lock.json' || true)"
