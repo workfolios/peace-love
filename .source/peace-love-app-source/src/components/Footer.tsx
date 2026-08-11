@@ -145,9 +145,10 @@ export default function Footer({ setActivePage }: FooterProps) {
                 </span>
               </h3>
               
-              <p className="text-sm leading-relaxed max-w-sm font-medium text-[#D6C9DF]">
-                Locally owned, bonded, and trusted. Helping homeowners travel with a little more peace of mind by providing reliable property check-ins and premium companion animal sitting in Rapid City and the Black Hills.
-              </p>
+              <div className="max-w-sm space-y-4 text-sm leading-relaxed font-medium text-[#D6C9DF]">
+                <p>Locally owned, bonded, and trusted.</p>
+                <p>Helping homeowners travel with a little more peace of mind by providing reliable property check-ins and premium companion animal sitting.</p>
+              </div>
             </div>
 
             {/* Column 2: Quick Links Navigation (Center) */}

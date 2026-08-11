@@ -774,7 +774,7 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
               <h2 className={sectionTitleClass}>
                 Stories from Around the Neighborhood
               </h2>
-              <p className={`${sectionSubtitleClass} max-w-xl`}>
+              <p className={`${sectionSubtitleClass} max-w-xl md:max-w-2xl`}>
                 Real care, documented feedback, and neighborly peace of mind across the Black Hills.
               </p>
             </div>
@@ -1316,12 +1316,11 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
       <section id="standby-reserve-cta" className="px-4 py-24 sm:px-6 lg:px-8 bg-[#FDF8FB] border-t border-brand-plum/10 text-center font-sans">
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="space-y-4">
-            <h2 className={sectionTitleClass}>Join the Prairie Land Reserve Network</h2>
-            <p className="text-base text-brand-plum/80 max-w-2xl mx-auto font-medium leading-relaxed">
-              Are you reliable, experienced with pets, and interested in occasional, flexible shift coverage? 
-              Apply to join our tested standby list. Set your own availability calendar, pass a background check, 
-              and earn extra income when we need emergency or overflow coverage.
-            </p>
+            <h2 className={sectionTitleClass}>Join the Home + Pet Watch Standby Network</h2>
+            <div className="max-w-2xl mx-auto space-y-4 text-base text-brand-plum/80 font-medium leading-relaxed">
+              <p>Are you reliable, experienced with pets, and interested in occasional, flexible coverage?</p>
+              <p>Apply to join our standby network. Set your own availability, complete a background check, and earn extra income when short-notice or overflow coverage is needed.</p>
+            </div>
           </div>
           <div className="pt-6">
             <button
