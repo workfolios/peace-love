@@ -72,7 +72,7 @@ jobs:
           npm audit fix --package-lock-only
           rm -rf node_modules
           npm ci --no-audit --no-fund
-          test "$(npm ls nanoid --json | node -e \"let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const j=JSON.parse(s);const a=j.dependencies?.autoprefixer?.dependencies?.postcss?.dependencies?.nanoid?.version;process.stdout.write(a||'')})\")" = "3.3.18"
+          node -e "const l=require('./package-lock.json'); if (l.packages['node_modules/nanoid'].version !== '3.3.18') process.exit(1)"
           npm audit --audit-level=high
           npm run lint
           npm run build
@@ -84,8 +84,6 @@ jobs:
           changed="$(git status --short --untracked-files=no | awk '{print $2}' | sort)"
           expected="$(printf '%s\n' '.source/peace-love-app-source/package-lock.json' '.source/peace-love-app-source/src/components/HomeView.tsx' | sort)"
           test "$changed" = "$expected"
-          git diff -- .source/peace-love-app-source/src/components/HomeView.tsx
-          git diff -- .source/peace-love-app-source/package-lock.json
 
       - name: Commit approved corrections
         run: |
