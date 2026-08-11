@@ -208,9 +208,9 @@ export default function HomeView({ setActivePage }: HomeViewProps) {
   // supporting subtitle, nested module title, and module eyebrow.
   const sectionTitleClass = 'text-3xl sm:text-4xl font-bold tracking-tight text-[#100720]';
   const sectionTitleInverseClass = 'text-3xl sm:text-4xl font-bold tracking-tight text-white';
-  const sectionSubtitleClass = 'text-sm sm:text-base font-semibold text-brand-text/85 leading-relaxed';
+  const sectionSubtitleClass = 'text-sm! sm:text-base! font-semibold text-brand-text/85 leading-relaxed!';
   const moduleTitleClass = 'text-2xl font-bold text-[#100720] tracking-tight';
-  const moduleEyebrowClass = 'text-xs text-[#9C5B7F] font-bold uppercase tracking-wider';
+  const moduleEyebrowClass = 'text-xs! text-[#9C5B7F] font-bold uppercase tracking-wider';
 
   return (
     <div id="home-view" className="bg-white min-h-screen">
