@@ -10,6 +10,7 @@ import AdminView from './components/AdminView';
 import ClientPortalView from './components/ClientPortalView';
 import AssociatePortalView from './components/AssociatePortalView';
 import GovernedRefinementLayer from './components/GovernedRefinementLayer';
+import AccessibilityValidationFixes from './components/AccessibilityValidationFixes';
 import { ChevronUp } from 'lucide-react';
 
 export default function App() {
@@ -115,6 +116,7 @@ export default function App() {
 
       {/* Governed Version 2.1 accessibility, privacy, and prototype-boundary refinements */}
       <GovernedRefinementLayer activePage={activePage} />
+      <AccessibilityValidationFixes />
 
       {/* Dynamic Header */}
       <Header activePage={activePage} setActivePage={setActivePage} />
