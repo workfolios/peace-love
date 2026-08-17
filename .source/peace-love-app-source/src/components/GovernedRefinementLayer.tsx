@@ -108,12 +108,25 @@ export default function GovernedRefinementLayer({ activePage }: GovernedRefineme
         requestForm.prepend(guidance);
       }
 
-      // RO-085 / F-05: expose current and selected state programmatically without changing approved presentation copy.
+      // RO-085 / F-05: expose current, expanded, and selected state programmatically without changing approved presentation copy.
       document.querySelectorAll('[id^="nav-item-"], [id^="mobile-nav-"]').forEach((element) => {
         setAttributeIfChanged(element, 'aria-current', null);
       });
       setAttributeIfChanged(document.getElementById(`nav-item-${activePage}`), 'aria-current', 'page');
       setAttributeIfChanged(document.getElementById(`mobile-nav-${activePage}`), 'aria-current', 'page');
+
+      const faqButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('#neighbor-standard-trust button'))
+        .filter((button) => button.textContent?.trim().endsWith('?'));
+      faqButtons.forEach((button, index) => {
+        const panel = button.nextElementSibling as HTMLElement | null;
+        if (!panel) return;
+        if (!button.id) button.id = `faq-trigger-${index}`;
+        if (!panel.id) panel.id = `faq-panel-${index}`;
+        const expanded = panel.style.maxHeight !== '0px' && panel.style.maxHeight !== '';
+        setAttributeIfChanged(button, 'aria-expanded', String(expanded));
+        setAttributeIfChanged(button, 'aria-controls', panel.id);
+        setAttributeIfChanged(panel, 'aria-labelledby', button.id);
+      });
 
       document.querySelectorAll<HTMLButtonElement>('[id^="btn-pathOption-"]').forEach((button) => {
         const selected = button.className.includes('bg-brand-pink-light/30');
