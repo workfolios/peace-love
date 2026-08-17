@@ -19,6 +19,7 @@ export default function App() {
 
   useEffect(() => {
     const handleScroll = () => {
+      // Show button if scrolled down by 300px
       if (window.scrollY > 300) {
         setShowBackToTop(true);
       } else {
@@ -41,6 +42,7 @@ export default function App() {
   useEffect(() => {
     let observer: IntersectionObserver | null = null;
 
+    // Give direct transition tags to each root page level section element of active view
     const injectScrollFades = () => {
       const sections = document.querySelectorAll('section');
       sections.forEach((sec) => {
@@ -58,18 +60,20 @@ export default function App() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('is-visible');
+            // Retain on screen without repeating fade
             observer?.unobserve(entry.target);
           }
         });
       }, {
         root: null,
-        rootMargin: '0px 0px -100px 0px',
+        rootMargin: '0px 0px -100px 0px', // Trigger slightly ahead of viewport edge
         threshold: 0.1,
       });
 
       sections.forEach((sec) => observer?.observe(sec));
     };
 
+    // Delay a micro-instant of 50ms so active view renders properly first
     const timer = window.setTimeout(injectScrollFades, 50);
 
     return () => {
@@ -108,18 +112,22 @@ export default function App() {
         Skip to main content
       </a>
 
-      {/* Governed accessibility, privacy, and interaction-state refinements */}
+      {/* Governed Version 2.1 accessibility, privacy, and interaction-state refinements */}
       <GovernedRefinementLayer activePage={activePage} />
       <AccessibilityValidationFixes />
 
+      {/* Dynamic Header */}
       <Header activePage={activePage} setActivePage={setActivePage} />
-
+      
+      {/* Active Inner Page Content */}
       <main id="main-content-stage" tabIndex={-1} className="flex-grow pt-20">
         {renderActiveView()}
       </main>
 
+      {/* Global Brand Footer */}
       <Footer setActivePage={setActivePage} />
 
+      {/* Floating Back to Top Button */}
       {showBackToTop && (
         <button
           onClick={scrollToTop}
