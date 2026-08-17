@@ -25,26 +25,6 @@ function setAttributeIfChanged(element: Element | null, name: string, value: str
   if (element.getAttribute(name) !== value) element.setAttribute(name, value);
 }
 
-function replaceExactText(root: ParentNode, from: string, to: string) {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  let node: Node | null = walker.nextNode();
-  while (node) {
-    const value = node.textContent?.trim();
-    if (value === from && node.textContent !== to) {
-      node.textContent = to;
-    }
-    node = walker.nextNode();
-  }
-}
-
-function replaceContainingText(selector: string, phrase: string, replacement: string) {
-  document.querySelectorAll<HTMLElement>(selector).forEach((element) => {
-    if (element.textContent?.includes(phrase) && element.textContent !== replacement) {
-      element.textContent = replacement;
-    }
-  });
-}
-
 function isElementVisible(element: HTMLElement) {
   return element.getClientRects().length > 0 && window.getComputedStyle(element).visibility !== 'hidden';
 }
@@ -108,48 +88,7 @@ export default function GovernedRefinementLayer({ activePage }: GovernedRefineme
     let previousBodyOverflow = '';
 
     const enhanceDocument = () => {
-      // RO-112 / F-02: preserve the prototype interactions while removing production-like authority signals.
-      replaceExactText(document, 'LIVE AVAILABILITY', 'DEMO AVAILABILITY');
-      replaceExactText(document, 'Live View', 'Demo View');
-      replaceExactText(document, 'CHECK AVAILABILITY', 'CHECK DEMO AVAILABILITY');
-      replaceExactText(document, 'Parameters & Live Status', 'Parameters & Demo Status');
-      replaceExactText(document, 'June 2026 Scheduling Calendar', 'June 2026 Demo Scheduling Calendar');
-      replaceExactText(document, '⚠️ Overnight Blocked', '⚠️ Demo Overnight Conflict');
-      replaceExactText(document, '✅ Slot is Clear!', '✅ Demo Range Shows Open');
-      replaceExactText(document, 'Secure Block Now', 'Continue to Request');
-      replaceExactText(document, 'Check Your Dates →', 'Preview Your Dates →');
-
-      replaceContainingText(
-        '#reservation-availability-dropdown p',
-        'conflict with a reserved overnight block',
-        'The browser-local demo contains a reserved overnight block for one or more selected dates. Actual availability is confirmed directly with Jamie.'
-      );
-      replaceContainingText(
-        '#reservation-availability-dropdown p',
-        'is fully open for your custom',
-        'This browser-local demo shows no availability conflict for the selected dates. Jamie will confirm actual availability directly.'
-      );
-
-      document.querySelectorAll<HTMLElement>('[id^="footer-calcell-day-"]').forEach((cell) => {
-        const currentTitle = cell.getAttribute('title') || '';
-        if (currentTitle === 'Reserved Overnight Stay') cell.setAttribute('title', 'Demo Reserved Block');
-        if (currentTitle === 'Available / Open Booking Block') cell.setAttribute('title', 'Demo Open Block');
-      });
-
-      const portalFaqButton = Array.from(document.querySelectorAll<HTMLButtonElement>('#neighbor-standard-trust button'))
-        .find((button) => button.textContent?.includes('How do I modify my home instructions or access codes after booking?'));
-      if (portalFaqButton) {
-        const question = Array.from(portalFaqButton.querySelectorAll('span'))
-          .find((span) => span.textContent?.includes('How do I modify my home instructions or access codes after booking?'));
-        if (question) question.textContent = 'How do I share or update home instructions after booking?';
-        const panel = portalFaqButton.nextElementSibling as HTMLElement | null;
-        const answer = panel?.querySelector<HTMLElement>('div');
-        if (answer) {
-          answer.textContent = 'This public GitHub Pages version demonstrates the Client Portal interface. Portal records, uploads, and notifications are browser-local demonstration data, not a secure shared account or encrypted document vault. Coordinate sensitive access instructions directly after service details are confirmed, and do not enter access codes or credentials into this public demo.';
-        }
-      }
-
-      // RO-064 / F-01: remove invitations to disclose physical-access credentials and provide a blocking safeguard.
+      // RO-064 / F-01: keep the public inquiry operational while preventing disclosure of physical-access credentials.
       const homeInstructions = document.getElementById('input-home-instructions') as HTMLTextAreaElement | null;
       if (homeInstructions) {
         homeInstructions.placeholder = 'Mail, plants, package handling, routines, or other non-sensitive home details. Do not enter keys, access codes, or credentials.';
@@ -169,7 +108,7 @@ export default function GovernedRefinementLayer({ activePage }: GovernedRefineme
         requestForm.prepend(guidance);
       }
 
-      // RO-085 / F-05: expose current, expanded, and selected state programmatically.
+      // RO-085 / F-05: expose current, expanded, and selected state programmatically without changing approved presentation copy.
       document.querySelectorAll('[id^="nav-item-"], [id^="mobile-nav-"]').forEach((element) => {
         setAttributeIfChanged(element, 'aria-current', null);
       });
@@ -199,7 +138,7 @@ export default function GovernedRefinementLayer({ activePage }: GovernedRefineme
         setAttributeIfChanged(button, 'aria-current', current ? 'true' : null);
       });
 
-      // RO-083 / F-04: complete the testimonial dialog keyboard lifecycle without altering its visual design.
+      // RO-083 / F-04: complete the testimonial dialog keyboard lifecycle without altering visual design or feature language.
       const overlay = document.getElementById('typeform-modal-overlay');
       const dialog = overlay?.firstElementChild as HTMLElement | null;
       if (dialog) {

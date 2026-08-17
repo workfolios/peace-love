@@ -103,8 +103,6 @@ export default function App() {
     }
   };
 
-  const showPrototypeBoundary = activePage === 'admin' || activePage === 'client-portal' || activePage === 'associate-portal';
-
   return (
     <div id="peace-love-home-app" className="min-h-screen flex flex-col bg-white text-brand-text relative">
       <a
@@ -114,7 +112,7 @@ export default function App() {
         Skip to main content
       </a>
 
-      {/* Governed Version 2.1 accessibility, privacy, and prototype-boundary refinements */}
+      {/* Governed Version 2.1 accessibility, privacy, and interaction-state refinements */}
       <GovernedRefinementLayer activePage={activePage} />
       <AccessibilityValidationFixes />
 
@@ -123,15 +121,6 @@ export default function App() {
       
       {/* Active Inner Page Content */}
       <main id="main-content-stage" tabIndex={-1} className="flex-grow pt-20">
-        {showPrototypeBoundary && (
-          <div
-            id="prototype-capability-boundary"
-            role="note"
-            className="border-b border-brand-plum/10 bg-[#FDF8FB] px-4 py-3 text-center text-xs font-semibold leading-relaxed text-brand-plum sm:px-6"
-          >
-            <strong>Portfolio Demo:</strong> This public GitHub Pages version preserves the portal interface for demonstration. Portal records, availability, uploads, notifications, and role workflows are browser-local demo data, not secure shared production services. Do not enter real access codes, credentials, or protected information.
-          </div>
-        )}
         {renderActiveView()}
       </main>
 
