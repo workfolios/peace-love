@@ -9,6 +9,7 @@ import RequestView from './components/RequestView';
 import AdminView from './components/AdminView';
 import ClientPortalView from './components/ClientPortalView';
 import AssociatePortalView from './components/AssociatePortalView';
+import GovernedRefinementLayer from './components/GovernedRefinementLayer';
 import { ChevronUp } from 'lucide-react';
 
 export default function App() {
@@ -25,18 +26,21 @@ export default function App() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const scrollToTop = () => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: reduceMotion ? 'auto' : 'smooth'
     });
   };
 
   useEffect(() => {
+    let observer: IntersectionObserver | null = null;
+
     // Give direct transition tags to each root page level section element of active view
     const injectScrollFades = () => {
       const sections = document.querySelectorAll('section');
@@ -46,12 +50,17 @@ export default function App() {
         }
       });
 
-      const observer = new IntersectionObserver((entries) => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        sections.forEach((sec) => sec.classList.add('is-visible'));
+        return;
+      }
+
+      observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('is-visible');
             // Retain on screen without repeating fade
-            observer.unobserve(entry.target);
+            observer?.unobserve(entry.target);
           }
         });
       }, {
@@ -60,20 +69,16 @@ export default function App() {
         threshold: 0.1,
       });
 
-      sections.forEach((sec) => {
-        observer.observe(sec);
-      });
-
-      return observer;
+      sections.forEach((sec) => observer?.observe(sec));
     };
 
     // Delay a micro-instant of 50ms so active view renders properly first
-    const timer = setTimeout(() => {
-      const observer = injectScrollFades();
-      return () => observer.disconnect();
-    }, 50);
+    const timer = window.setTimeout(injectScrollFades, 50);
 
-    return () => clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer);
+      observer?.disconnect();
+    };
   }, [activePage]);
 
   const renderActiveView = () => {
@@ -97,13 +102,34 @@ export default function App() {
     }
   };
 
+  const showPrototypeBoundary = activePage === 'admin' || activePage === 'client-portal' || activePage === 'associate-portal';
+
   return (
     <div id="peace-love-home-app" className="min-h-screen flex flex-col bg-white text-brand-text relative">
+      <a
+        href="#main-content-stage"
+        className="fixed top-2 left-2 z-[300] -translate-y-20 rounded-lg bg-white px-4 py-2 text-sm font-bold text-brand-plum shadow-lg border border-brand-plum/20 transition-transform focus:translate-y-0"
+      >
+        Skip to main content
+      </a>
+
+      {/* Governed Version 2.1 accessibility, privacy, and prototype-boundary refinements */}
+      <GovernedRefinementLayer activePage={activePage} />
+
       {/* Dynamic Header */}
       <Header activePage={activePage} setActivePage={setActivePage} />
       
       {/* Active Inner Page Content */}
-      <main id="main-content-stage" className="flex-grow pt-20">
+      <main id="main-content-stage" tabIndex={-1} className="flex-grow pt-20">
+        {showPrototypeBoundary && (
+          <div
+            id="prototype-capability-boundary"
+            role="note"
+            className="border-b border-brand-plum/10 bg-[#FDF8FB] px-4 py-3 text-center text-xs font-semibold leading-relaxed text-brand-plum sm:px-6"
+          >
+            <strong>Portfolio Demo:</strong> This public GitHub Pages version preserves the portal interface for demonstration. Portal records, availability, uploads, notifications, and role workflows are browser-local demo data, not secure shared production services. Do not enter real access codes, credentials, or protected information.
+          </div>
+        )}
         {renderActiveView()}
       </main>
 
@@ -123,4 +149,3 @@ export default function App() {
     </div>
   );
 }
-
