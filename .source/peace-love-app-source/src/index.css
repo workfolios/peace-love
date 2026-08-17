@@ -44,6 +44,12 @@ h1, h2, h3 {
   font-weight: 700 !important;
 }
 
+/* RO-081: retain the approved visual language while making keyboard focus unmistakable. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-brand-pink) !important;
+  outline-offset: 3px !important;
+}
+
 /* Fluid scroll trigged animations */
 .scroll-section {
   opacity: 0;
@@ -56,3 +62,25 @@ h1, h2, h3 {
   transform: translateY(0) !important;
 }
 
+/* RO-091: authored motion remains available by default but never gates content or state for reduced-motion users. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  .scroll-section,
+  .scroll-section.is-visible {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
